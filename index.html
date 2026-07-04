@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Pick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── 헤더 ──────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">AI <em>Pick</em></div>
+  <nav class="header-nav">
+    <a href="#" class="nav-link">홈</a>
+    <a href="#" class="nav-link">카테고리</a>
+    <a href="#" class="nav-link">AI 추천</a>
+  </nav>
+  <div class="header-right">
+    <button class="wish-count-btn" id="wishCount" onclick="openWishlist()">❤️ 찜</button>
+    <div id="authArea"></div>
+    <button class="theme-toggle" id="themeToggle">
+      <span id="themeIcon">🌙</span>
+      <span id="themeLabel">다크모드</span>
+    </button>
+  </div>
+</header>
+
+<!-- ── AI 검색 히어로 ─────────────────────────── -->
+<section class="ai-hero">
+  <div class="ai-hero-inner">
+    <div class="ai-badge">✨ AI 쇼핑 어시스턴트</div>
+    <h1 class="ai-hero-title">원하는 걸 말해보세요<br>AI가 딱 맞게 골라드려요</h1>
+    <p class="ai-hero-sub">가격, 브랜드, 조건까지 — 자연어로 편하게</p>
+    <form class="ai-form" onsubmit="event.preventDefault(); aiSearch();">
+      <input id="aiBox" placeholder="예: 5만원 이하 가벼운 운동화, 발볼 넓은 거">
+      <button type="submit">AI 추천 받기 →</button>
+    </form>
+    <!-- 추천 개수 슬라이더 -->
+    <div class="ai-options">
+      <span class="ai-options-label">추천 개수</span>
+      <div class="slider-wrap">
+        <input id="countSlider" type="range" min="1" max="15" value="10"
+               oninput="updateSlider(this.value)">
+        <span class="slider-value" id="sliderValue">10개</span>
+      </div>
+    </div>
+    <!-- 빠른 카테고리 칩 -->
+    <div class="quick-chips">
+      <button class="chip" onclick="quickSearch('운동화')">👟 운동화</button>
+      <button class="chip" onclick="quickSearch('무선 이어폰')">🎧 무선 이어폰</button>
+      <button class="chip" onclick="quickSearch('청바지')">👖 청바지</button>
+      <button class="chip" onclick="quickSearch('백팩')">🎒 백팩</button>
+      <button class="chip" onclick="quickSearch('노트북')">💻 노트북</button>
+      <button class="chip" onclick="quickSearch('향수')">🌸 향수</button>
+    </div>
+  </div>
+</section>
+
+<!-- ── 툴바 (직접 검색 + 정렬) ──────────────────── -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <form class="search-form" onsubmit="event.preventDefault(); search();">
+      <span class="search-icon">🔍</span>
+      <input id="searchBox" placeholder="상품명 직접 검색">
+      <button type="submit">검색</button>
+    </form>
+  </div>
+  <div class="toolbar-right">
+    <button class="sort-btn active" onclick="setSort('sim', this)">정확도순</button>
+    <button class="sort-btn" onclick="setSort('asc', this)">낮은 가격순</button>
+    <button class="sort-btn" onclick="setSort('dsc', this)">높은 가격순</button>
+  </div>
+</div>
+
+<!-- ── 본문 ──────────────────────────────────── -->
+<main>
+  <div class="status-bar" id="statusBar" style="display:none">
+    <span id="statusText"></span>
+    <span class="status-count" id="statusCount"></span>
+  </div>
+  <div id="content"></div>
+</main>
+
+<!-- ── 푸터 ──────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">AI <em>Pick</em></div>
+    <div class="footer-desc">AI가 여러 쇼핑몰을 비교해서 딱 맞는 상품을 추천해드립니다</div>
+    <div class="footer-links">
+      <a href="#">서비스 소개</a>
+      <a href="#">이용약관</a>
+      <a href="#">개인정보처리방침</a>
+    </div>
+    <div class="footer-copy">© 2026 AI Pick. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- ── 모달 ──────────────────────────────────── -->
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+  <div class="modal" id="modalBody"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
