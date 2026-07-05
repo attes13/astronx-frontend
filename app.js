@@ -207,7 +207,10 @@ async function toggleWish(btn) {
   try {
     const res = await fetch(`${API_BASE}/api/wishlist/toggle`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': currentUser.id,  // ← 유저 ID 헤더로 전송
+      },
       body: JSON.stringify(product),
       credentials: 'include',
     });
