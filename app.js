@@ -232,7 +232,10 @@ async function restoreWishHearts() {
   if (!currentUser) return;
 
   try {
-    const res = await fetch(`${API_BASE}/api/wishlist/ids`, { credentials: 'include' });
+    const res = await fetch(`${API_BASE}/api/wishlist/ids`, {
+      credentials: 'include',
+      headers: { 'x-user-id': currentUser.id },
+    });
     const data = await res.json();
 
     data.ids.forEach(productId => {
@@ -259,7 +262,10 @@ async function openWishlist() {
     return;
   }
 
-  const res = await fetch(`${API_BASE}/api/wishlist`, { credentials: 'include' });
+  const res = await fetch(`${API_BASE}/api/wishlist`, {
+    credentials: 'include',
+    headers: { 'x-user-id': currentUser.id },
+  });
   const data = await res.json();
 
   if (!data.items.length) {
@@ -288,43 +294,9 @@ async function openWishlist() {
   document.getElementById('overlay').classList.add('show');
 }
 
-// 찜 목록 아이템 HTML
-function wishItemHtml(p) {
-  return `
-    <div id="wish-item-${esc(p.product_id)}"
-         style="display:flex;gap:12px;align-items:center;
-                padding:10px;background:var(--surface-2);border-radius:8px">
-      <img src="${esc(p.image)}"
-           style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0">
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;
-                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          ${esc(p.title)}
-        </div>
-        <div style="font-size:15px;font-weight:800;color:var(--accent)">
-          ${p.price.toLocaleString()}원
-        </div>
-        <div style="font-size:11px;color:var(--muted)">${esc(p.mall)}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
-        <a href="${esc(p.link)}" target="_blank"
-           style="padding:6px 12px;background:var(--accent);color:#fff;
-                  border-radius:7px;font-size:12px;font-weight:700;
-                  text-decoration:none;text-align:center">
-          구매 →
-        </a>
-        <button onclick="deleteOneWish('${esc(p.product_id)}')"
-          style="padding:6px 12px;background:transparent;color:var(--muted);
-                 border:1px solid var(--border);border-radius:7px;
-                 font-size:12px;font-weight:600;cursor:pointer">
-          삭제
-        </button>
-      </div>
-    </div>
-  `;
-}
-
+// ════════════════════════════════════════════════
 // 단건 삭제
+// ════════════════════════════════════════════════
 async function deleteOneWish(productId) {
   if (!confirm('이 상품을 찜 목록에서 삭제할까요?')) return;
 
@@ -332,6 +304,7 @@ async function deleteOneWish(productId) {
     const res = await fetch(`${API_BASE}/api/wishlist/${productId}`, {
       method: 'DELETE',
       credentials: 'include',
+      headers: { 'x-user-id': currentUser.id },
     });
     const data = await res.json();
 
@@ -351,7 +324,9 @@ async function deleteOneWish(productId) {
   }
 }
 
+// ════════════════════════════════════════════════
 // 전체 삭제
+// ════════════════════════════════════════════════
 async function deleteAllWish() {
   if (!confirm('찜 목록을 전부 삭제할까요?')) return;
 
@@ -359,6 +334,7 @@ async function deleteAllWish() {
     await fetch(`${API_BASE}/api/wishlist/all`, {
       method: 'DELETE',
       credentials: 'include',
+      headers: { 'x-user-id': currentUser.id },
     });
 
     document.querySelectorAll('.wish-btn').forEach(btn => {
