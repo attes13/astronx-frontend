@@ -1,0 +1,16 @@
+<svg width="680" height="180" viewBox="0 0 680 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="emberGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F2A65A"/>
+      <stop offset="100%" stop-color="#FF6B4A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Wordmark. Uses a serif fallback stack; for production, replace with
+       Fraunces glyph outlines exported from a design tool so rendering is
+       consistent across every environment. -->
+  <text x="0" y="120" font-family="Georgia, 'Times New Roman', serif" font-size="120" fill="#F5F1E8">Sagitta</text>
+
+  <!-- Ring mark, positioned as a superscript point after the wordmark -->
+  <circle cx="618" cy="46" r="17" fill="none" stroke="url(#emberGradient)" stroke-width="7"/>
+</svg>

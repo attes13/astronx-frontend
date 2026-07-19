@@ -393,8 +393,8 @@ function openModal(p) {
       <div class="modal-price">${p.price.toLocaleString()}원</div>
       <div class="modal-mall">${esc(p.mall)}</div>
       ${p.reason
-        ? `<div class="ai-reason" style="margin-bottom:16px">💡 ${esc(p.reason)}</div>`
-        : ''}
+      ? `<div class="ai-reason" style="margin-bottom:16px">💡 ${esc(p.reason)}</div>`
+      : ''}
       <div class="modal-actions">
         <button class="modal-close-btn" onclick="closeModal()">닫기</button>
         <a href="${esc(p.link)}" target="_blank" rel="noopener" class="modal-buy-btn">
@@ -419,8 +419,8 @@ async function checkLogin() {
     area.innerHTML = `
       <div class="user-info">
         ${currentUser.profileImage
-          ? `<img src="${esc(currentUser.profileImage)}" class="user-avatar">`
-          : `<div class="user-avatar-placeholder"></div>`}
+        ? `<img src="${esc(currentUser.profileImage)}" class="user-avatar">`
+        : `<div class="user-avatar-placeholder"></div>`}
         <span class="user-name">${esc(currentUser.nickname)}</span>
         <a href="#" onclick="logout()" class="logout-btn">로그아웃</a>
       </div>
@@ -498,6 +498,189 @@ function renderEmpty(title, desc) {
 }
 
 // ════════════════════════════════════════════════
+// AI 취향 찾기 (스와이프)
+// ════════════════════════════════════════════════
+let swipeQueue = [];
+let swipeLikes = [];
+let swipeCategory = '';
+let swipeDone = 0;
+let swipeTotal = 0;
+
+function openSwipe() {
+  document.getElementById('swipeOverlay').classList.add('show');
+  showSwipeStep('Category');
+}
+
+function closeSwipe() {
+  document.getElementById('swipeOverlay').classList.remove('show');
+}
+
+function showSwipeStep(step) {
+  ['Category', 'Cards', 'Analyzing', 'Result'].forEach(s => {
+    document.getElementById(`swipeStep${s}`).style.display =
+      s === step ? 'block' : 'none';
+  });
+}
+
+async function startSwipe(category) {
+  swipeCategory = category;
+  swipeLikes = [];
+  swipeDone = 0;
+
+  showSwipeStep('Cards');
+  document.getElementById('deck').innerHTML =
+    '<div style="text-align:center;padding:60px 0;color:var(--muted)">상품 불러오는 중...</div>';
+
+  try {
+    const res = await fetch(`${API_BASE}/api/swipe/cards?category=${encodeURIComponent(category)}`);
+    const data = await res.json();
+    swipeQueue = data.cards || [];
+    swipeTotal = Math.min(swipeQueue.length, 10);
+    renderSwipeDeck();
+    updateSwipeProgress();
+  } catch (e) {
+    document.getElementById('deck').innerHTML =
+      '<div style="text-align:center;padding:60px 0;color:var(--muted)">상품을 불러올 수 없어요</div>';
+  }
+}
+
+function renderSwipeDeck() {
+  const deck = document.getElementById('deck');
+  deck.innerHTML = '';
+  const visible = swipeQueue.slice(0, 3).reverse();
+  visible.forEach((p, idx) => {
+    const realIdx = visible.length - 1 - idx;
+    const card = document.createElement('div');
+    card.className = 'swipe-card';
+    card.style.zIndex = idx;
+    card.style.transform = `scale(${1 - realIdx * 0.04}) translateY(${realIdx * 10}px)`;
+    card.innerHTML = `
+      <div class="stamp like">LIKE</div>
+      <div class="stamp nope">NOPE</div>
+      <img class="swipe-card-img" src="${esc(p.image)}" alt="" onerror="this.src=''">
+      <div class="swipe-card-body">
+        ${p.brand ? `<div class="swipe-card-brand">${esc(p.brand)}</div>` : ''}
+        <div class="swipe-card-title">${esc(p.title)}</div>
+        <div class="swipe-card-price">${p.price.toLocaleString()}원</div>
+      </div>
+    `;
+    deck.appendChild(card);
+    if (realIdx === 0) attachSwipeDrag(card, p);
+  });
+}
+
+function attachSwipeDrag(card, product) {
+  let startX = 0, startY = 0, curX = 0, curY = 0, dragging = false;
+  const likeStamp = card.querySelector('.stamp.like');
+  const nopeStamp = card.querySelector('.stamp.nope');
+
+  const onStart = (x, y) => { dragging = true; startX = x; startY = y; card.style.transition = 'none'; };
+  const onMove = (x, y) => {
+    if (!dragging) return;
+    curX = x - startX; curY = y - startY;
+    card.style.transform = `translate(${curX}px, ${curY}px) rotate(${curX * 0.08}deg)`;
+    const op = Math.min(Math.abs(curX) / 100, 1);
+    if (curX > 0) { likeStamp.style.opacity = op; nopeStamp.style.opacity = 0; }
+    else { nopeStamp.style.opacity = op; likeStamp.style.opacity = 0; }
+  };
+  const onEnd = () => {
+    if (!dragging) return;
+    dragging = false;
+    card.style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+    if (Math.abs(curX) > 100) flySwipe(card, product, curX > 0 ? 'right' : 'left');
+    else { card.style.transform = ''; likeStamp.style.opacity = 0; nopeStamp.style.opacity = 0; }
+    curX = 0; curY = 0;
+  };
+
+  card.addEventListener('mousedown', e => onStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', e => onMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', onEnd);
+  card.addEventListener('touchstart', e => onStart(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  card.addEventListener('touchmove', e => onMove(e.touches[0].clientX, e.touches[0].clientY), { passive: true });
+  card.addEventListener('touchend', onEnd);
+}
+
+function flySwipe(card, product, dir) {
+  const x = dir === 'right' ? window.innerWidth : -window.innerWidth;
+  card.style.transform = `translate(${x}px, 40px) rotate(${dir === 'right' ? 30 : -30}deg)`;
+  card.style.opacity = '0';
+
+  if (dir === 'right') swipeLikes.push(product);
+  swipeQueue.shift();
+  swipeDone++;
+  updateSwipeProgress();
+
+  setTimeout(() => {
+    if (swipeDone >= swipeTotal || swipeQueue.length === 0) analyzeSwipe();
+    else renderSwipeDeck();
+  }, 300);
+}
+
+function btnSwipe(dir) {
+  const deck = document.getElementById('deck');
+  const topCard = deck.querySelector('.swipe-card:last-child');
+  if (!topCard || !swipeQueue.length) return;
+  const product = swipeQueue[0];
+  topCard.style.transition = 'transform .4s cubic-bezier(.4,0,.2,1)';
+  const stamp = topCard.querySelector(dir === 'right' ? '.stamp.like' : '.stamp.nope');
+  if (stamp) stamp.style.opacity = 1;
+  flySwipe(topCard, product, dir);
+}
+
+function updateSwipeProgress() {
+  const pct = swipeTotal ? (swipeDone / swipeTotal) * 100 : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${swipeDone} / ${swipeTotal}`;
+}
+
+async function analyzeSwipe() {
+  showSwipeStep('Analyzing');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/swipe/analyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ likes: swipeLikes, category: swipeCategory }),
+    });
+    const data = await res.json();
+    showSwipeResult(data);
+  } catch (e) {
+    showSwipeResult({
+      persona: '분석 오류',
+      emoji: '😢',
+      description: '분석 중 문제가 생겼어요. 다시 시도해주세요.',
+      recommendations: [],
+    });
+  }
+}
+
+function showSwipeResult(data) {
+  showSwipeStep('Result');
+  document.getElementById('resultEmoji').textContent = data.emoji || '🎯';
+  document.getElementById('resultTitle').textContent = `당신은 "${data.persona}"`;
+  document.getElementById('resultDesc').textContent = data.description || '';
+
+  const grid = document.getElementById('resultGrid');
+  if (data.recommendations && data.recommendations.length) {
+    grid.innerHTML = data.recommendations.map(p => `
+      <div class="result-card" onclick='openModal(${JSON.stringify(p).replace(/'/g, "&#39;")})'>
+        <img src="${esc(p.image)}" alt="" onerror="this.src=''">
+        <div class="result-card-body">
+          <div class="result-card-title">${esc(p.title)}</div>
+          <div class="result-card-price">${p.price.toLocaleString()}원</div>
+        </div>
+      </div>
+    `).join('');
+  } else {
+    grid.innerHTML = '';
+  }
+}
+
+function resetSwipe() {
+  showSwipeStep('Category');
+}
+
+// ════════════════════════════════════════════════
 // 첫 로딩 — 인기 상품 + 로그인 상태 확인
 // ════════════════════════════════════════════════
 (async () => {
@@ -538,8 +721,8 @@ function renderEmpty(title, desc) {
     area.innerHTML = `
       <div class="user-info">
         ${currentUser.profileImage
-          ? `<img src="${esc(currentUser.profileImage)}" class="user-avatar">`
-          : `<div class="user-avatar-placeholder"></div>`}
+        ? `<img src="${esc(currentUser.profileImage)}" class="user-avatar">`
+        : `<div class="user-avatar-placeholder"></div>`}
         <span class="user-name">${esc(currentUser.nickname)}</span>
         <a href="#" onclick="logout()" class="logout-btn">로그아웃</a>
       </div>
@@ -554,6 +737,35 @@ function renderEmpty(title, desc) {
       </a>
     `;
   }
+
+  // ════════════════════════════════════════════════
+  // 실시간 인기 검색어
+  // ════════════════════════════════════════════════
+  const TRENDING_KEYWORDS = [
+    '무선 이어폰', '텀블러', '캠핑 의자', '노트북 파우치',
+    '기계식 키보드', '러닝화', '보조배터리', '핸드크림',
+    '블루투스 스피커', '요가매트',
+  ];
+
+  function renderTrending() {
+    const list = document.getElementById('trendingList');
+    if (!list) return;
+
+    list.innerHTML = TRENDING_KEYWORDS.map((keyword, i) => `
+    <div class="trending-item" onclick="quickSearch('${esc(keyword)}')">
+      <span class="trending-rank">${i + 1}</span>
+      <span>${esc(keyword)}</span>
+    </div>
+  `).join('');
+
+    // 업데이트 시간 표시
+    const now = new Date();
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} 기준`;
+    const timeEl = document.getElementById('trendingTime');
+    if (timeEl) timeEl.textContent = timeStr;
+  }
+
+  renderTrending();
 
   // 상품 로딩
   showSkeleton();

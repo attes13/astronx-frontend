@@ -1,108 +1,186 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI Pick</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI Pick</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<!-- ── 헤더 ──────────────────────────────────── -->
-<header class="topbar">
-  <div class="brand">AI <em>Pick</em></div>
-  <nav class="header-nav">
-    <a href="#" class="nav-link">홈</a>
-    <a href="#" class="nav-link">카테고리</a>
-    <a href="#" class="nav-link">AI 추천</a>
-  </nav>
-  <div class="header-right">
-    <button class="wish-count-btn" id="wishCount" onclick="openWishlist()">❤️ 찜</button>
-    <div id="authArea"></div>
-    <button class="theme-toggle" id="themeToggle">
-      <span id="themeIcon">🌙</span>
-      <span id="themeLabel">다크모드</span>
-    </button>
-  </div>
-</header>
+  <!-- ── 헤더 ──────────────────────────────────── -->
+  <header class="topbar">
+    <!-- 이미지로 교체 -->
+    <div class="brand">
+      <img src="sagitta-mark.svg" alt="AI Pick" class="brand-logo">
+    </div>
+    <nav class="header-nav">
+      <a href="#" class="nav-link">홈</a>
+      <a href="#" class="nav-link">카테고리</a>
+      <a href="#" class="nav-link">AI 추천</a>
+    </nav>
+    <div class="header-right">
+      <button class="wish-count-btn" id="wishCount" onclick="openWishlist()">❤️ 찜</button>
+      <div id="authArea"></div>
+      <button class="theme-toggle" id="themeToggle">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">다크모드</span>
+      </button>
+    </div>
+  </header>
 
-<!-- ── AI 검색 히어로 ─────────────────────────── -->
-<section class="ai-hero">
-  <div class="ai-hero-inner">
-    <div class="ai-badge">✨ AI 쇼핑 어시스턴트</div>
-    <h1 class="ai-hero-title">원하는 걸 말해보세요<br>AI가 딱 맞게 골라드려요</h1>
-    <p class="ai-hero-sub">가격, 브랜드, 조건까지 — 자연어로 편하게</p>
-    <form class="ai-form" onsubmit="event.preventDefault(); aiSearch();">
-      <input id="aiBox" placeholder="예: 5만원 이하 가벼운 운동화, 발볼 넓은 거">
-      <button type="submit">AI 추천 받기 →</button>
-    </form>
-    <!-- 추천 개수 슬라이더 -->
-    <div class="ai-options">
-      <span class="ai-options-label">추천 개수</span>
-      <div class="slider-wrap">
-        <input id="countSlider" type="range" min="1" max="15" value="10"
-               oninput="updateSlider(this.value)">
-        <span class="slider-value" id="sliderValue">10개</span>
+  <!-- ── AI 검색 히어로 ─────────────────────────── -->
+  <section class="ai-hero">
+    <div class="ai-hero-inner">
+      <div class="ai-badge">✨ AI 쇼핑 어시스턴트</div>
+      <h1 class="ai-hero-title">원하는 걸 말해보세요<br>AI가 딱 맞게 골라드려요</h1>
+      <p class="ai-hero-sub">가격, 브랜드, 조건까지 — 자연어로 편하게</p>
+      <form class="ai-form" onsubmit="event.preventDefault(); aiSearch();">
+        <input id="aiBox" placeholder="예: 5만원 이하 가벼운 운동화, 발볼 넓은 거">
+        <button type="submit">AI 추천 받기 →</button>
+      </form>
+      <!-- 추천 개수 슬라이더 -->
+      <div class="ai-options">
+        <span class="ai-options-label">추천 개수</span>
+        <div class="slider-wrap">
+          <input id="countSlider" type="range" min="1" max="15" value="10" oninput="updateSlider(this.value)">
+          <span class="slider-value" id="sliderValue">10개</span>
+        </div>
+      </div>
+      <!-- 빠른 카테고리 칩 -->
+      <div class="quick-chips">
+        <button class="chip" onclick="quickSearch('운동화')">👟 운동화</button>
+        <button class="chip" onclick="quickSearch('무선 이어폰')">🎧 무선 이어폰</button>
+        <button class="chip" onclick="quickSearch('청바지')">👖 청바지</button>
+        <button class="chip" onclick="quickSearch('백팩')">🎒 백팩</button>
+        <button class="chip" onclick="quickSearch('노트북')">💻 노트북</button>
+        <button class="chip" onclick="quickSearch('향수')">🌸 향수</button>
       </div>
     </div>
-    <!-- 빠른 카테고리 칩 -->
-    <div class="quick-chips">
-      <button class="chip" onclick="quickSearch('운동화')">👟 운동화</button>
-      <button class="chip" onclick="quickSearch('무선 이어폰')">🎧 무선 이어폰</button>
-      <button class="chip" onclick="quickSearch('청바지')">👖 청바지</button>
-      <button class="chip" onclick="quickSearch('백팩')">🎒 백팩</button>
-      <button class="chip" onclick="quickSearch('노트북')">💻 노트북</button>
-      <button class="chip" onclick="quickSearch('향수')">🌸 향수</button>
+    <!-- AI 취향 찾기 버튼 -->
+    <button class="taste-btn" onclick="openSwipe()">
+      ✨ AI 취향 찾기 — 스와이프로 내 취향 발견하기
+    </button>
+  </section>
+  <!-- ── 실시간 인기 검색어 ─────────────────────── -->
+  <section class="trending">
+    <div class="trending-inner">
+      <div class="trending-header">
+        <span class="trending-title">🔥 실시간 인기 검색어</span>
+        <span class="trending-time" id="trendingTime"></span>
+      </div>
+      <div class="trending-list" id="trendingList"></div>
+    </div>
+  </section>
+  <!-- ── 툴바 (직접 검색 + 정렬) ──────────────────── -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <form class="search-form" onsubmit="event.preventDefault(); search();">
+        <span class="search-icon">🔍</span>
+        <input id="searchBox" placeholder="상품명 직접 검색">
+        <button type="submit">검색</button>
+      </form>
+    </div>
+    <div class="toolbar-right">
+      <button class="sort-btn active" onclick="setSort('sim', this)">정확도순</button>
+      <button class="sort-btn" onclick="setSort('asc', this)">낮은 가격순</button>
+      <button class="sort-btn" onclick="setSort('dsc', this)">높은 가격순</button>
     </div>
   </div>
-</section>
 
-<!-- ── 툴바 (직접 검색 + 정렬) ──────────────────── -->
-<div class="toolbar">
-  <div class="toolbar-left">
-    <form class="search-form" onsubmit="event.preventDefault(); search();">
-      <span class="search-icon">🔍</span>
-      <input id="searchBox" placeholder="상품명 직접 검색">
-      <button type="submit">검색</button>
-    </form>
-  </div>
-  <div class="toolbar-right">
-    <button class="sort-btn active" onclick="setSort('sim', this)">정확도순</button>
-    <button class="sort-btn" onclick="setSort('asc', this)">낮은 가격순</button>
-    <button class="sort-btn" onclick="setSort('dsc', this)">높은 가격순</button>
-  </div>
-</div>
-
-<!-- ── 본문 ──────────────────────────────────── -->
-<main>
-  <div class="status-bar" id="statusBar" style="display:none">
-    <span id="statusText"></span>
-    <span class="status-count" id="statusCount"></span>
-  </div>
-  <div id="content"></div>
-</main>
-
-<!-- ── 푸터 ──────────────────────────────────── -->
-<footer class="footer">
-  <div class="footer-inner">
-    <div class="footer-brand">AI <em>Pick</em></div>
-    <div class="footer-desc">AI가 여러 쇼핑몰을 비교해서 딱 맞는 상품을 추천해드립니다</div>
-    <div class="footer-links">
-      <a href="#">서비스 소개</a>
-      <a href="#">이용약관</a>
-      <a href="#">개인정보처리방침</a>
+  <!-- ── 본문 ──────────────────────────────────── -->
+  <main>
+    <div class="status-bar" id="statusBar" style="display:none">
+      <span id="statusText"></span>
+      <span class="status-count" id="statusCount"></span>
     </div>
-    <div class="footer-copy">© 2026 AI Pick. All rights reserved.</div>
+    <div id="content"></div>
+  </main>
+
+  <!-- ── 푸터 ──────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="sagitta-wordmark.svg" alt="AI Pick" class="footer-logo">
+      </div>
+      <div class="footer-desc">AI가 여러 쇼핑몰을 비교해서 딱 맞는 상품을 추천해드립니다</div>
+      <div class="footer-links">
+        <a href="#">서비스 소개</a>
+        <a href="#">이용약관</a>
+        <a href="#">개인정보처리방침</a>
+      </div>
+      <div class="footer-copy">© 2026 AstronX All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- ── 모달 ──────────────────────────────────── -->
+  <div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
+    <div class="modal" id="modalBody"></div>
   </div>
-</footer>
 
-<!-- ── 모달 ──────────────────────────────────── -->
-<div class="overlay" id="overlay" onclick="if(event.target===this) closeModal()">
-  <div class="modal" id="modalBody"></div>
-</div>
+  <!-- ══ AI 취향 찾기 스와이프 모달 ══ -->
+  <div class="swipe-overlay" id="swipeOverlay">
+    <div class="swipe-modal">
+      <button class="swipe-close" onclick="closeSwipe()">✕</button>
 
-<script src="app.js"></script>
+      <!-- 1단계: 카테고리 선택 -->
+      <div class="swipe-step" id="swipeStepCategory">
+        <div class="swipe-modal-title">어떤 걸 찾아볼까요?</div>
+        <div class="swipe-modal-sub">카테고리를 고르면 취향 분석을 시작해요</div>
+        <div class="category-grid">
+          <button class="category-item" onclick="startSwipe('운동화')">👟<span>운동화</span></button>
+          <button class="category-item" onclick="startSwipe('무선이어폰')">🎧<span>이어폰</span></button>
+          <button class="category-item" onclick="startSwipe('백팩')">🎒<span>가방</span></button>
+          <button class="category-item" onclick="startSwipe('키보드')">⌨️<span>키보드</span></button>
+          <button class="category-item" onclick="startSwipe('향수')">🌸<span>향수</span></button>
+          <button class="category-item" onclick="startSwipe('의자')">🪑<span>의자</span></button>
+          <button class="category-item" onclick="startSwipe('원피스')">👗<span>원피스</span></button>
+          <button class="category-item" onclick="startSwipe('시계')">⌚<span>시계</span></button>
+        </div>
+      </div>
+
+      <!-- 2단계: 스와이프 -->
+      <div class="swipe-step" id="swipeStepCards" style="display:none">
+        <div class="progress-wrap">
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-label" id="progressLabel">0 / 0</div>
+        </div>
+        <div class="deck" id="deck"></div>
+        <div class="swipe-btns">
+          <button class="swipe-action-btn nope" onclick="btnSwipe('left')">✕</button>
+          <button class="swipe-action-btn like" onclick="btnSwipe('right')">♥</button>
+        </div>
+        <div class="swipe-hint">← 싫으면 왼쪽 · 좋으면 오른쪽 →</div>
+      </div>
+
+      <!-- 3단계: AI 분석중 -->
+      <div class="swipe-step" id="swipeStepAnalyzing" style="display:none">
+        <div class="analyzing">
+          <div class="ai-orb"></div>
+          <div class="analyzing-text">AI가 취향을 분석하고 있어요...</div>
+        </div>
+      </div>
+
+      <!-- 4단계: 결과 -->
+      <div class="swipe-step" id="swipeStepResult" style="display:none">
+        <div class="result-emoji" id="resultEmoji">🎯</div>
+        <div class="result-title" id="resultTitle"></div>
+        <div class="result-desc" id="resultDesc"></div>
+        <div class="result-grid" id="resultGrid"></div>
+        <button class="restart-btn" onclick="resetSwipe()">다시 하기</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
+
 </html>
